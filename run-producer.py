@@ -81,6 +81,7 @@ DATA_GRID_SOIL_OW = "germany/buek200_1000_25832_etrs89-utm32n_OW.asc"
 # DATA_GRID_CROPS = "germany/crops-all2017-2019_1000_25832_etrs89-utm32n.asc"
 # DATA_GRID_CROPS = "germany/dwd-stations-pheno_1000_25832_etrs89-utm32n.asc"
 DATA_GRID_CROPS = "germany/germany-complete_1000_25832_etrs89-utm32n.asc"
+DATA_GRID_IRRIGATION = "germany/irrigation_1000_25832_etrs89-utm32n.asc"
 TEMPLATE_PATH_LATLON = "{path_to_climate_dir}/latlon-to-rowcol.json"
 TEMPLATE_PATH_CLIMATE_CSV = "{gcm}/{rcm}/{scenario}/{ensmem}/{version}/row-{crow}/col-{ccol}.csv"
 
@@ -215,6 +216,16 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
     crop_grid = np.loadtxt(path_to_crop_grid, dtype=int, skiprows=6)
     crop_interpolate = Mrunlib.create_ascii_grid_interpolator(crop_grid, crop_meta)
     print("read: ", path_to_crop_grid)
+
+    # irrigation data
+    path_to_irrigation_grid = paths["path-to-data-dir"] + DATA_GRID_IRRIGATION
+    irrigation_epsg_code = int(path_to_irrigation_grid.split("/")[-1].split("_")[2])
+    irrigation_crs = CRS.from_epsg(irrigation_epsg_code)
+    if wgs84_crs not in soil_crs_to_x_transformers:
+        soil_crs_to_x_transformers[wgs84_crs] = Transformer.from_crs(soil_crs, irrigation_crs)
+    irrigation_metadata, _ = Mrunlib.read_header(path_to_irrigation_grid)
+    irrigation_grid = np.loadtxt(path_to_irrigation_grid, dtype=int, skiprows=6)
+    print("read: ", path_to_irrigation_grid)
 
 
     # Create the function for the mask. This function will later use the additional column in a setup file!
@@ -611,7 +622,20 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
                         "StageTemperatureSum"][0] = stage_ts
 
                 env_template["params"]["simulationParameters"]["UseNMinMineralFertilisingMethod"] = setup["fertilization"]
-                env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = setup["irrigation"]
+
+                # env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = setup["irrigation"]
+                # Setting irrigation parameters for each grid cell
+                if irrigation_grid[srow, scol] > 0:
+                    # Set UseAutomaticIrrigation to True if irrigation is > 0 and read the irrigation amount from the grid
+                    env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = True
+                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = irrigation_grid[srow, scol]
+                elif irrigation_grid[srow, scol] == 0:
+                    # Set UseAutomaticIrrigation to False if irrigation is 0
+                    env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = False
+                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = 0
+                else:
+                    # If irrigation is -9999, then the grid cell uses the default value from the sim.json
+                    env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = setup["irrigation"]
 
                 env_template["params"]["simulationParameters"]["NitrogenResponseOn"] = setup["NitrogenResponseOn"]
                 env_template["params"]["simulationParameters"]["WaterDeficitResponseOn"] = setup["WaterDeficitResponseOn"]
