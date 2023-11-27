@@ -225,6 +225,7 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
         soil_crs_to_x_transformers[wgs84_crs] = Transformer.from_crs(soil_crs, irrigation_crs)
     irrigation_metadata, _ = Mrunlib.read_header(path_to_irrigation_grid)
     irrigation_grid = np.loadtxt(path_to_irrigation_grid, dtype=int, skiprows=6)
+    irrigation_interpolate = Mrunlib.create_ascii_grid_interpolator(irrigation_grid, irrigation_metadata, False)
     print("read: ", path_to_irrigation_grid)
 
 
@@ -623,19 +624,22 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
 
                 env_template["params"]["simulationParameters"]["UseNMinMineralFertilisingMethod"] = setup["fertilization"]
 
+                if irrigation_crs not in tcoords:
+                    tcoords[irrigation_crs] = soil_crs_to_x_transformers[irrigation_crs].transform(sr, sh)
+                ilr, ilh = tcoords[irrigation_crs]
+                irrigation = int(irrigation_interpolate(ilr, ilh))
+
                 # env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = setup["irrigation"]
                 # Setting irrigation parameters for each grid cell
-                if irrigation_grid[srow, scol] > 0:
-                    # Set UseAutomaticIrrigation to True if irrigation is > 0 and read the irrigation amount from the grid
-                    env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = True
-                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = irrigation_grid[srow, scol]
-                elif irrigation_grid[srow, scol] == 0:
-                    # Set UseAutomaticIrrigation to False if irrigation is 0
-                    env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = False
-                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = 0
-                else:
-                    # If irrigation is -9999, then the grid cell uses the default value from the sim.json
-                    env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = setup["irrigation"]
+                # Set UseAutomaticIrrigation to True if irrigation is > 0 and read the irrigation amount from the grid
+                env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = \
+                    setup["irrigation"] and irrigation == 1
+                #else:
+                #    # Set UseAutomaticIrrigation to False if irrigation is 0
+                #    env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = False
+                #else:
+                #    # If irrigation is -9999, then the grid cell uses the default value from the sim.json
+                #    env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = setup["irrigation"]
 
                 env_template["params"]["simulationParameters"]["NitrogenResponseOn"] = setup["NitrogenResponseOn"]
                 env_template["params"]["simulationParameters"]["WaterDeficitResponseOn"] = setup["WaterDeficitResponseOn"]
