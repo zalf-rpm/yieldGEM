@@ -76,7 +76,7 @@ DATA_GRID_HEIGHT = "germany/dem_1000_25832_etrs89-utm32n.asc"
 DATA_GRID_SLOPE = "germany/slope_1000_25832_etrs89-utm32n.asc"
 DATA_GRID_LAND_USE = "germany/landuse_1000_31469_gk5.asc"
 DATA_GRID_SOIL = "germany/buek200_1000_25832_etrs89-utm32n.asc"
-DATA_GRID_SOIL_OW = "germany/buek200_1000_25832_etrs89-utm32n_OW.asc"
+#DATA_GRID_SOIL_OW = "germany/buek200_1000_25832_etrs89-utm32n_OW.asc"
 # ORIGINAL DATA_GRID_SOIL = "germany/buek200_1000_25832_etrs89-utm32n.asc"
 # DATA_GRID_CROPS = "germany/crops-all2017-2019_1000_25832_etrs89-utm32n.asc"
 # DATA_GRID_CROPS = "germany/dwd-stations-pheno_1000_25832_etrs89-utm32n.asc"
@@ -86,11 +86,11 @@ TEMPLATE_PATH_LATLON = "{path_to_climate_dir}/latlon-to-rowcol.json"
 TEMPLATE_PATH_CLIMATE_CSV = "{gcm}/{rcm}/{scenario}/{ensmem}/{version}/row-{crow}/col-{ccol}.csv"
 
 #Additional data for masking the regions
-NUTS3_REGIONS = "data/germany/NUTS_RG_03M_25832.shp"
+#NUTS3_REGIONS = "data/germany/NUTS_RG_03M_25832.shp"
 
 TEMPLATE_PATH_HARVEST = "{path_to_data_dir}/projects/monica-germany/ILR_SEED_HARVEST_doys_{crop_id}.csv"
 
-gdf = gpd.read_file(NUTS3_REGIONS)
+#gdf = gpd.read_file(NUTS3_REGIONS)
 
 DEBUG_DONOT_SEND = False
 DEBUG_WRITE = False
@@ -231,19 +231,19 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
 
     # Create the function for the mask. This function will later use the additional column in a setup file!
 
-    def create_mask_from_shapefile(NUTS3_REGIONS, region_name, path_to_soil_grid):
-        regions_df = gpd.read_file(NUTS3_REGIONS)
-        region = regions_df[regions_df["NUTS_NAME"] == region_name]
-
-        #This is needed to read the transformation data correctly from the file. With the original opening it does not work
-        with rasterio.open(path_to_soil_grid) as dataset:
-            soil_grid = dataset.read(1)
-            transform = dataset.transform
-
-        rows, cols = soil_grid.shape
-        mask = rasterio.features.geometry_mask([region.geometry.values[0]], out_shape=(rows, cols), transform=transform, invert=True)
-
-        return mask
+    # def create_mask_from_shapefile(NUTS3_REGIONS, region_name, path_to_soil_grid):
+    #     regions_df = gpd.read_file(NUTS3_REGIONS)
+    #     region = regions_df[regions_df["NUTS_NAME"] == region_name]
+    #
+    #     #This is needed to read the transformation data correctly from the file. With the original opening it does not work
+    #     with rasterio.open(path_to_soil_grid) as dataset:
+    #         soil_grid = dataset.read(1)
+    #         transform = dataset.transform
+    #
+    #     rows, cols = soil_grid.shape
+    #     mask = rasterio.features.geometry_mask([region.geometry.values[0]], out_shape=(rows, cols), transform=transform, invert=True)
+    #
+    #     return mask
 
 
     sent_env_count = 1
@@ -265,19 +265,19 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
         ensmem = setup["ensmem"]
         version = setup["version"]
         crop_id = setup["crop-id"]
-        region_name = setup["region_name"]
+        # region_name = setup["region_name"]
 
         ## extract crop_id from crop-id name that has possible an extenstion
         crop_id_short = crop_id.split('_')[0]
 
         # Create the soil mask for the specific region
-        path_to_soil_grid_ow = paths["path-to-data-dir"] + DATA_GRID_SOIL_OW
-        mask = create_mask_from_shapefile(NUTS3_REGIONS, region_name, path_to_soil_grid_ow)
+        # path_to_soil_grid_ow = paths["path-to-data-dir"] + DATA_GRID_SOIL_OW
+        # mask = create_mask_from_shapefile(NUTS3_REGIONS, region_name, path_to_soil_grid_ow)
 
         # Apply the soil mask to the soil grid
-        soil_grid_copy = soil_grid.copy()
-        soil_grid[mask == False] = -8888
-        soil_grid[soil_grid_copy == -9999] = -9999
+        # soil_grid_copy = soil_grid.copy()
+        # soil_grid[mask == False] = -8888
+        # soil_grid[soil_grid_copy == -9999] = -9999
 
         # add crop id from setup file
         try:
