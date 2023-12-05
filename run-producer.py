@@ -224,8 +224,7 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
     if wgs84_crs not in soil_crs_to_x_transformers:
         soil_crs_to_x_transformers[wgs84_crs] = Transformer.from_crs(soil_crs, irrigation_crs)
     irrigation_metadata, _ = Mrunlib.read_header(path_to_irrigation_grid)
-    # irrigation_grid = np.loadtxt(path_to_irrigation_grid, dtype=int, skiprows=6)
-    irrigation_grid = np.genfromtxt(path_to_irrigation_grid, dtype=int, skip_header=6, invalid_raise=False)
+    irrigation_grid = np.loadtxt(path_to_irrigation_grid, dtype=int, skiprows=6)
     irrigation_interpolate = Mrunlib.create_ascii_grid_interpolator(irrigation_grid, irrigation_metadata, False)
     print("read: ", path_to_irrigation_grid)
 
