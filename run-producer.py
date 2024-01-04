@@ -84,6 +84,7 @@ DATA_GRID_SOIL = "germany/buek200_1000_25832_etrs89-utm32n.asc"
 DATA_GRID_CROPS = "germany/germany-crop-ww_1000_25832_etrs89-utm32n.asc"  # winter wheat
 DATA_GRID_IRRIGATION = "germany/irrigation_1000_25832_etrs89-utm32n_wc_16.asc"
 TEMPLATE_PATH_LATLON = "{path_to_climate_dir}/latlon-to-rowcol.json"
+# TEMPLATE_PATH_LATLON = "data/latlon-to-rowcol.json"
 TEMPLATE_PATH_CLIMATE_CSV = "{gcm}/{rcm}/{scenario}/{ensmem}/{version}/row-{crow}/col-{ccol}.csv"
 
 #Additional data for masking the regions
@@ -630,17 +631,13 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
                 ilr, ilh = tcoords[irrigation_crs]
                 irrigation = int(irrigation_interpolate(ilr, ilh))
 
-                # env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = setup["irrigation"]
-                # Setting irrigation parameters for each grid cell
-                # Set UseAutomaticIrrigation to True if irrigation is > 0 and read the irrigation amount from the grid
-                env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = \
-                    setup["irrigation"] and irrigation == 1
-                #else:
-                #    # Set UseAutomaticIrrigation to False if irrigation is 0
-                #    env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = False
-                #else:
-                #    # If irrigation is -9999, then the grid cell uses the default value from the sim.json
-                #    env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = setup["irrigation"]
+                # set UseAutomaticIrrigation to True if irrigation setup is True and irrigation grid cell is 1
+                env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = (
+                        setup["irrigation"] and irrigation == 1)
+
+                # add default value for irrigation amount and threshold
+                env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = 10.0
+                env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"] = 0.3
 
                 env_template["params"]["simulationParameters"]["NitrogenResponseOn"] = setup["NitrogenResponseOn"]
                 env_template["params"]["simulationParameters"]["WaterDeficitResponseOn"] = setup["WaterDeficitResponseOn"]
