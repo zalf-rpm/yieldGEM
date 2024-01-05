@@ -88,7 +88,7 @@ DATA_GRID_SOIL_OW = "germany/buek200_1000_25832_etrs89-utm32n_OW.asc"
 # DATA_GRID_CROPS = "germany/dwd-stations-pheno_1000_25832_etrs89-utm32n.asc"
 # DATA_GRID_CROPS = "germany/germany-complete_1000_25832_etrs89-utm32n.asc"  # all crops
 DATA_GRID_CROPS = "germany/germany-crop-ww_1000_25832_etrs89-utm32n.asc"  # winter wheat
-DATA_GRID_IRRIGATION = "germany/irrigation_1000_25832_etrs89-utm32n_wc_16.asc"
+DATA_GRID_IRRIGATION = "germany/irrigation_1000_25832_etrs89-utm32n_wc_18.asc"
 TEMPLATE_PATH_LATLON = "{path_to_climate_dir}/latlon-to-rowcol.json"
 # TEMPLATE_PATH_LATLON = "data/latlon-to-rowcol.json"
 TEMPLATE_PATH_CLIMATE_CSV = "{gcm}/{rcm}/{scenario}/{ensmem}/{version}/row-{crow}/col-{ccol}.csv"
@@ -669,6 +669,9 @@ def run_producer(server={"server": None, "port": None}, shared_id=None):
                     env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"] = 0.3
                 else:
                     env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = False
+                    # reset irrigation amount and threshold
+                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = [0, "mm"]
+                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"] = 0.9
                 print(f'setup irrigation: {setup["irrigation"]}, irrigation grid cell value: {irrigation}')
                 print(f'irrigation amount: {env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"]}')
                 print(f'irrigation threshold: {env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"]}')

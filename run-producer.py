@@ -642,7 +642,11 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
                     env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"] = 0.3
                 else:
                     env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = False
+                    # reset irrigation amount and threshold
+                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = [0, "mm"]
+                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"] = 0.9
                 print(f'setup irrigation: {setup["irrigation"]}, irrigation grid cell value: {irrigation}')
+                print(f'UseAutomaticIrrigation: {env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"]}')
                 print(f'irrigation amount: {env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"]}')
                 print(f'irrigation threshold: {env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"]}')
 
