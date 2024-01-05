@@ -638,7 +638,7 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
                 if setup["irrigation"] and irrigation == 1:
                     env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = True
                     # add default values for irrigation amount and threshold
-                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = 10.0
+                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = [10, "mm"]
                     env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"] = 0.3
                 else:
                     env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = False
