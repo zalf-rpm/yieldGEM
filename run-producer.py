@@ -631,13 +631,16 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
                 ilr, ilh = tcoords[irrigation_crs]
                 irrigation = int(irrigation_interpolate(ilr, ilh))
 
-                # set UseAutomaticIrrigation to True if irrigation setup is True and irrigation grid cell is 1
-                env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = (
-                        setup["irrigation"] and irrigation == 1)
-
-                # add default value for irrigation amount and threshold
-                env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = 10.0
-                env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"] = 0.3
+                # set UseAutomaticIrrigation to True if irrigation setup is True and irrigation is 1
+                # env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = (
+                #         setup["irrigation"] and irrigation == 1)
+                if setup["irrigation"] and irrigation == 1:
+                    env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = True
+                    # add default values for irrigation amount and threshold
+                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = 10.0
+                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"] = 0.3
+                else:
+                    env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = False
 
                 env_template["params"]["simulationParameters"]["NitrogenResponseOn"] = setup["NitrogenResponseOn"]
                 env_template["params"]["simulationParameters"]["WaterDeficitResponseOn"] = setup["WaterDeficitResponseOn"]
