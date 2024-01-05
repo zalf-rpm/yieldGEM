@@ -630,6 +630,7 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
                     tcoords[irrigation_crs] = soil_crs_to_x_transformers[irrigation_crs].transform(sr, sh)
                 ilr, ilh = tcoords[irrigation_crs]
                 irrigation = int(irrigation_interpolate(ilr, ilh))
+                print(f'irrigation grid cell value: {irrigation}')
 
                 # set UseAutomaticIrrigation to True if irrigation setup is True and irrigation is 1
                 # env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = (
@@ -641,6 +642,9 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
                     env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"] = 0.3
                 else:
                     env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = False
+                print(f'setup irrigation: {setup["irrigation"]}, irrigation grid cell value: {irrigation}')
+                print(f'irrigation amount: {env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"]}')
+                print(f'irrigation threshold: {env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"]}')
 
                 env_template["params"]["simulationParameters"]["NitrogenResponseOn"] = setup["NitrogenResponseOn"]
                 env_template["params"]["simulationParameters"]["WaterDeficitResponseOn"] = setup["WaterDeficitResponseOn"]
