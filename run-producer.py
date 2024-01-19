@@ -37,6 +37,7 @@ from rasterio import features
 import monica_io3
 import soil_io3
 import monica_run_lib as Mrunlib
+from irrigation_manager import IrrigationManager
 
 PATHS = {
      # adjust the local path to your environment
@@ -230,6 +231,8 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
     irrigation_interpolate = Mrunlib.create_ascii_grid_interpolator(irrigation_grid, irrigation_metadata, False)
     print("read: ", path_to_irrigation_grid)
 
+    # initialize irrigation manager
+    irrigation_manager = IrrigationManager("irrigated_crops.json")
 
     # Create the function for the mask. This function will later use the additional column in a setup file!
 
@@ -362,10 +365,10 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
                 if soil_id == nodata_value:
                     continue
 
-                #get coordinate of clostest climate element of real soil-cell
+                # get coordinate of closest climate element of real soil-cell
                 sh = yllcorner + (scellsize / 2) + (srows - srow - 1) * scellsize
                 sr = xllcorner + (scellsize / 2) + scol * scellsize
-                #inter = crow/ccol encoded into integer
+                # inter = crow/ccol encoded into integer
                 crow, ccol = climate_data_interpolator(sr, sh)
 
                 crop_grid_id = int(crop_grid[srow, scol])
@@ -630,16 +633,18 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
                     tcoords[irrigation_crs] = soil_crs_to_x_transformers[irrigation_crs].transform(sr, sh)
                 ilr, ilh = tcoords[irrigation_crs]
                 irrigation = int(irrigation_interpolate(ilr, ilh))
-                print(f'irrigation grid cell value: {irrigation}')
+                print(f'irrigation grid cell value: {irrigation} for row: {srow} and col: {scol}')
 
                 # set UseAutomaticIrrigation to True if irrigation setup is True and irrigation is 1
                 # env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = (
                 #         setup["irrigation"] and irrigation == 1)
                 if setup["irrigation"] and irrigation == 1:
-                    env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = True
-                    # add default values for irrigation amount and threshold
-                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = [10, "mm"]
-                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"] = 0.3
+                    # check if the crop type is in the irrigated crops map
+                    if irrigation_manager.should_be_irrigated_by_crop_id(setup["crop-id"]):
+                        env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = True
+                        # add default values for irrigation amount and threshold
+                        env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = [10, "mm"]
+                        env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"] = 0.3
                 else:
                     env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = False
                     # reset irrigation amount and threshold
