@@ -83,7 +83,7 @@ DATA_GRID_SOIL = "germany/buek200_1000_25832_etrs89-utm32n.asc"
 # DATA_GRID_CROPS = "germany/dwd-stations-pheno_1000_25832_etrs89-utm32n.asc"
 # DATA_GRID_CROPS = "germany/germany-complete_1000_25832_etrs89-utm32n.asc"  # all crops
 DATA_GRID_CROPS = "germany/germany-crop-ww_1000_25832_etrs89-utm32n.asc"  # winter wheat
-DATA_GRID_IRRIGATION = "germany/irrigation_1000_25832_etrs89-utm32n_wc_16.asc"
+DATA_GRID_IRRIGATION = "germany/irrigation_1000_25832_etrs89-utm32n_wc_18.asc"
 TEMPLATE_PATH_LATLON = "{path_to_climate_dir}/latlon-to-rowcol.json"
 # TEMPLATE_PATH_LATLON = "data/latlon-to-rowcol.json"
 TEMPLATE_PATH_CLIMATE_CSV = "{gcm}/{rcm}/{scenario}/{ensmem}/{version}/row-{crow}/col-{ccol}.csv"
@@ -224,8 +224,8 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
     path_to_irrigation_grid = paths["path-to-data-dir"] + DATA_GRID_IRRIGATION
     irrigation_epsg_code = int(path_to_irrigation_grid.split("/")[-1].split("_")[2])
     irrigation_crs = CRS.from_epsg(irrigation_epsg_code)
-    if wgs84_crs not in soil_crs_to_x_transformers:
-        soil_crs_to_x_transformers[wgs84_crs] = Transformer.from_crs(soil_crs, irrigation_crs)
+    if irrigation_crs not in soil_crs_to_x_transformers:
+        soil_crs_to_x_transformers[irrigation_crs] = Transformer.from_crs(soil_crs, irrigation_crs)
     irrigation_metadata, _ = Mrunlib.read_header(path_to_irrigation_grid)
     irrigation_grid = np.loadtxt(path_to_irrigation_grid, dtype=int, skiprows=6)
     irrigation_interpolate = Mrunlib.create_ascii_grid_interpolator(irrigation_grid, irrigation_metadata, False)
