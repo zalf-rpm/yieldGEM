@@ -37,6 +37,7 @@ from rasterio import features
 import monica_io3
 import soil_io3
 import monica_run_lib as Mrunlib
+from irrigation_manager import IrrigationManager
 
 PATHS = {
     # adjust the local path to your environment
@@ -231,12 +232,15 @@ def run_producer(server={"server": None, "port": None}, shared_id=None):
     path_to_irrigation_grid = paths["path-to-data-dir"] + DATA_GRID_IRRIGATION
     irrigation_epsg_code = int(path_to_irrigation_grid.split("/")[-1].split("_")[2])
     irrigation_crs = CRS.from_epsg(irrigation_epsg_code)
-    if wgs84_crs not in soil_crs_to_x_transformers:
-        soil_crs_to_x_transformers[wgs84_crs] = Transformer.from_crs(soil_crs, irrigation_crs)
+    if irrigation_crs not in soil_crs_to_x_transformers:
+        soil_crs_to_x_transformers[irrigation_crs] = Transformer.from_crs(soil_crs, irrigation_crs)
     irrigation_metadata, _ = Mrunlib.read_header(path_to_irrigation_grid)
     irrigation_grid = np.loadtxt(path_to_irrigation_grid, dtype=int, skiprows=6)
     irrigation_interpolate = Mrunlib.create_ascii_grid_interpolator(irrigation_grid, irrigation_metadata, False)
     print("read: ", path_to_irrigation_grid)
+
+    # initialize irrigation manager
+    irrigation_manager = IrrigationManager("irrigated_crops.json")
 
     # Create the function for the mask. This function will later use the additional column in a setup file!
 
@@ -657,22 +661,25 @@ def run_producer(server={"server": None, "port": None}, shared_id=None):
                     tcoords[irrigation_crs] = soil_crs_to_x_transformers[irrigation_crs].transform(sr, sh)
                 ilr, ilh = tcoords[irrigation_crs]
                 irrigation = int(irrigation_interpolate(ilr, ilh))
-                print(f'irrigation grid cell value: {irrigation}')
+                print(f'irrigation grid cell value: {irrigation} for row: {srow}, col: {scol}')
 
                 # set UseAutomaticIrrigation to True if irrigation setup is True and irrigation is 1
                 # env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = (
                 #         setup["irrigation"] and irrigation == 1)
                 if setup["irrigation"] and irrigation == 1:
-                    env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = True
-                    # add default values for irrigation amount and threshold
-                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = [10, "mm"]
-                    env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"] = 0.3
+                    # check if the crop type is in the irrigated crops map
+                    if irrigation_manager.should_be_irrigated_by_crop_id(setup["crop-id"]):
+                        env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = True
+                        # add default values for irrigation amount and threshold
+                        env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = [10, "mm"]
+                        env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"] = 0.3
                 else:
                     env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"] = False
                     # reset irrigation amount and threshold
                     env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"] = [0, "mm"]
                     env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"] = 0.9
                 print(f'setup irrigation: {setup["irrigation"]}, irrigation grid cell value: {irrigation}')
+                print(f'UseAutomaticIrrigation: {env_template["params"]["simulationParameters"]["UseAutomaticIrrigation"]}')
                 print(f'irrigation amount: {env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["amount"]}')
                 print(f'irrigation threshold: {env_template["params"]["simulationParameters"]["AutoIrrigationParams"]["threshold"]}')
 
