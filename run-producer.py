@@ -65,7 +65,7 @@ DATA_GRID_CROPS = "germany/germany-crop-ww_1000_25832_etrs89-utm32n.asc"  # wint
 DATA_GRID_IRRIGATION = "germany/irrigation_1000_25832_etrs89-utm32n_wc_18.asc"
 
 TEMPLATE_PATH_LATLON = "{path_to_climate_dir}/latlon-to-rowcol.json"
-TEMPLATE_PATH_LATLON = "data/latlon-to-rowcol.json"
+# TEMPLATE_PATH_LATLON = "data/latlon-to-rowcol.json"
 TEMPLATE_PATH_CLIMATE_CSV = "{gcm}/{rcm}/{scenario}/{ensmem}/{version}/row-{crow}/col-{ccol}.csv"
 TEMPLATE_PATH_HARVEST = "{path_to_data_dir}/projects/monica-germany/ILR_SEED_HARVEST_doys_{crop_id}.csv"
 
@@ -464,8 +464,8 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
 
                 if irrigation_crs not in tcoords:
                     tcoords[irrigation_crs] = soil_crs_to_x_transformers[irrigation_crs].transform(sr, sh)
-                ilr, ilh = tcoords[irrigation_crs]
-                irrigation = int(irrigation_interpolate(ilr, ilh))
+                irr, irh = tcoords[irrigation_crs]
+                irrigation = int(irrigation_interpolate(irr, irh))
 
                 env_template["params"]["userCropParameters"]["__enable_T_response_leaf_expansion__"] = setup["LeafExtensionModifier"]
                     
