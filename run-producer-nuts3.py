@@ -81,7 +81,7 @@ PATHS = {
 DATA_SOIL_DB = "germany/buek200.sqlite"
 DATA_GRID_HEIGHT = "germany/dem_1000_25832_etrs89-utm32n.asc"
 DATA_GRID_SLOPE = "germany/slope_1000_25832_etrs89-utm32n.asc"
-# DATA_GRID_LAND_USE = "germany/landuse_1000_31469_gk5.asc"
+DATA_GRID_LAND_USE = "germany/landuse_1000_31469_gk5.asc"
 DATA_GRID_SOIL = "germany/buek200_1000_25832_etrs89-utm32n.asc"
 DATA_GRID_SOIL_OW = "germany/buek200_1000_25832_etrs89-utm32n_OW.asc"
 # ORIGINAL DATA_GRID_SOIL = "germany/buek200_1000_25832_etrs89-utm32n.asc"
@@ -131,7 +131,7 @@ def run_producer(server={"server": None, "port": None}, shared_id=None):
         "sim.json": "sim_final.json",
         "crop.json": "crop_final.json",
         "site.json": "site.json",
-        "setups-file": "sim_setups_OW.csv",
+        "setups-file": "sim_setups_RE.csv",
         "run-setups": "[1]",
         "shared_id": shared_id
     }
@@ -212,15 +212,15 @@ def run_producer(server={"server": None, "port": None}, shared_id=None):
     print("read: ", path_to_slope_grid)
 
     # land use data
-    # path_to_landuse_grid = paths["path-to-data-dir"] + DATA_GRID_LAND_USE
-    # landuse_epsg_code = int(path_to_landuse_grid.split("/")[-1].split("_")[2])
-    # landuse_crs = CRS.from_epsg(landuse_epsg_code)
-    # if landuse_crs not in soil_crs_to_x_transformers:
-    #     soil_crs_to_x_transformers[landuse_crs] = Transformer.from_crs(soil_crs, landuse_crs)
-    # landuse_meta, _ = Mrunlib.read_header(path_to_landuse_grid)
-    # landuse_grid = np.loadtxt(path_to_landuse_grid, dtype=int, skiprows=6)
-    # landuse_interpolate = Mrunlib.create_ascii_grid_interpolator(landuse_grid, landuse_meta)
-    # print("read: ", path_to_landuse_grid)
+    path_to_landuse_grid = paths["path-to-data-dir"] + DATA_GRID_LAND_USE
+    landuse_epsg_code = int(path_to_landuse_grid.split("/")[-1].split("_")[2])
+    landuse_crs = CRS.from_epsg(landuse_epsg_code)
+    if landuse_crs not in soil_crs_to_x_transformers:
+        soil_crs_to_x_transformers[landuse_crs] = Transformer.from_crs(soil_crs, landuse_crs)
+    landuse_meta, _ = Mrunlib.read_header(path_to_landuse_grid)
+    landuse_grid = np.loadtxt(path_to_landuse_grid, dtype=int, skiprows=6)
+    landuse_interpolate = Mrunlib.create_ascii_grid_interpolator(landuse_grid, landuse_meta)
+    print("read: ", path_to_landuse_grid)
 
     # crop mask data
     path_to_crop_grid = paths["path-to-data-dir"] + DATA_GRID_CROPS
