@@ -89,11 +89,11 @@ DATA_GRID_SOIL_OW = "germany/buek200_1000_25832_etrs89-utm32n_OW.asc"
 # DATA_GRID_CROPS = "germany/dwd-stations-pheno_1000_25832_etrs89-utm32n.asc"
 # DATA_GRID_CROPS = "germany/germany-complete_1000_25832_etrs89-utm32n.asc"  # all crops
 # DATA_GRID_CROPS = "germany/crop-ww2018_1000_25832_etrs89-utm32n.asc"  # winter wheat
-# DATA_GRID_CROPS = "germany/crop-sm2018_1000_25832_etrs89-utm32n.asc"  # maize
-DATA_GRID_CROPS = "germany/crop-po2018_1000_25832_etrs89-utm32n.asc"  # potato
+DATA_GRID_CROPS = "germany/crop-sm2018_1000_25832_etrs89-utm32n.asc"  # maize
+# DATA_GRID_CROPS = "germany/crop-po2018_1000_25832_etrs89-utm32n.asc"  # potato
 # DATA_GRID_IRRIGATION = "germany/irrigation_1000_25832_etrs89-utm32n_wc_18.asc"  # winter crops
-# DATA_GRID_IRRIGATION = "germany/irrigation_1000_25832_etrs89-utm32n_maize_18.asc"  # maize
-DATA_GRID_IRRIGATION = "germany/irrigation_1000_25832_etrs89-utm32n_other_18.asc"  # potato and sugar beet
+DATA_GRID_IRRIGATION = "germany/irrigation_1000_25832_etrs89-utm32n_maize_18.asc"  # maize
+# DATA_GRID_IRRIGATION = "germany/irrigation_1000_25832_etrs89-utm32n_other_18.asc"  # potato and sugar beet
 
 TEMPLATE_PATH_LATLON = "{path_to_climate_dir}/latlon-to-rowcol.json"
 # TEMPLATE_PATH_LATLON = "data/latlon-to-rowcol.json"
