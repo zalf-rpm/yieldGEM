@@ -72,7 +72,7 @@ def create_output(msg):
     cmcs = list(cm_count_to_vals.keys())
     cmcs.sort()
     last_cmc = cmcs[-1]
-    if "year" not in cm_count_to_vals[last_cmc]:
+    if "Year" not in cm_count_to_vals[last_cmc]:
         cm_count_to_vals.pop(last_cmc)
 
     return cm_count_to_vals
@@ -259,7 +259,7 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
                 if soil_id == -9999:
                     continue
 
-                # get coordinate of clostest climate element of real soil-cell
+                # get coordinate of closest climate element of real soil-cell
                 sh = yllcorner + (scellsize / 2) + (srows - srow - 1) * scellsize
                 sr = xllcorner + (scellsize / 2) + scol * scellsize
 
@@ -377,7 +377,6 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
                     process_message.setup_count += 1
 
         elif write_normal_output_files:
-
             if msg.get("type", "") in ["jobs-per-cell", "no-data", "setup_data"]:
                 # print "ignoring", result.get("type", "")
                 return
@@ -386,6 +385,9 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
                   str(msg.get("customId", "")))
 
             custom_id = msg["customId"]
+            is_nodata = custom_id["nodata"]
+            if is_nodata:
+                return leave
             setup_id = custom_id["setup_id"]
             row = custom_id["srow"]
             col = custom_id["scol"]
