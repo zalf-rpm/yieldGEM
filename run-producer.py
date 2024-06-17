@@ -65,7 +65,7 @@ DATA_SOIL_DB = "germany/buek200.sqlite"
 DATA_GRID_HEIGHT = "germany/dem_1000_25832_etrs89-utm32n.asc" 
 DATA_GRID_SLOPE = "germany/slope_1000_25832_etrs89-utm32n.asc"
 DATA_GRID_SOIL = "germany/buek200_1000_25832_etrs89-utm32n.asc"
-DATA_GRID_CROPS = "germany/crop-ww2018_1000_25832_etrs89-utm32n.asc"  # winter wheat
+DATA_GRID_CROPS = "germany/crop-ww2017-2019_1000_25832_etrs89-utm32n.asc"  # winter wheat
 DATA_GRID_IRRIGATION = "germany/irrigation_1000_25832_etrs89-utm32n_wc_18.asc"
 
 TEMPLATE_PATH_LATLON = "{path_to_climate_dir}/latlon-to-rowcol.json"
