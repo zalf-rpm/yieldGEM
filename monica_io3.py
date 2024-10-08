@@ -12,18 +12,19 @@
 # Landscape Systems Analysis at the ZALF.
 # Copyright (C: Leibniz Centre for Agricultural Landscape Research (ZALF)
 
-import os
-import time
 import json
+import os
+from pathlib import Path
 import sys
+import time
 
+PATH_TO_SOIL_IO3 = Path(os.path.realpath(__file__)).parent.parent.parent.parent / "util/soil"
+
+if str(PATH_TO_SOIL_IO3) not in sys.path:
+    sys.path.insert(1, str(PATH_TO_SOIL_IO3))
 import soil_io3
-#import monica_python
-#print("path to monica_python: ", monica_python.__file__)
 
-#print("sys.version: ", sys.version)
-
-print("local monica_io3.py")
+#------------------------------------------------------------------------------
 
 CACHE_REFS = False
 
@@ -46,16 +47,19 @@ ORGAN_STRUCT = 4
 ORGAN_SUGAR = 5
 ORGAN_UNDEFINED_ORGAN_ = 6
 
+#------------------------------------------------------------------------------
 
 def oid_is_organ(oid):
     return oid["organ"] != ORGAN_UNDEFINED_ORGAN_
 
+#------------------------------------------------------------------------------
 
 def oid_is_range(oid):
     return oid["fromLayer"] >= 0 \
         and oid["toLayer"] >= 0 #\
         #and oid["fromLayer"] < oid["toLayer"]
 
+#------------------------------------------------------------------------------
 
 def op_to_string(op):
     return {
@@ -70,6 +74,7 @@ def op_to_string(op):
         OP_UNDEFINED_OP_: "undef"
     }.get(op, "undef")
 
+#------------------------------------------------------------------------------
 
 def organ_to_string(organ):
     return {
@@ -82,6 +87,7 @@ def organ_to_string(organ):
         ORGAN_UNDEFINED_ORGAN_: "undef"
     }.get(organ, "undef")
 
+#------------------------------------------------------------------------------
 
 def oid_to_string(oid, include_time_agg):
     oss = ""
@@ -101,6 +107,7 @@ def oid_to_string(oid, include_time_agg):
 
     return oss
 
+#------------------------------------------------------------------------------
 
 def write_output_header_rows(output_ids,
                              include_header_row=True,
@@ -142,13 +149,14 @@ def write_output_header_rows(output_ids,
     if include_header_row:
         out.append(row1)
     if include_units_row:
-        out.append(row2)
+        out.append(row4)
     if include_time_agg:
         out.append(row3)
-        out.append(row4)
+        out.append(row2)
 
     return out
 
+#------------------------------------------------------------------------------
 
 def write_output(output_ids, values, round_ids={}):
     "write actual output lines"
@@ -169,6 +177,25 @@ def write_output(output_ids, values, round_ids={}):
             out.append(row)
     return out
 
+#------------------------------------------------------------------------------
+
+def write_output_obj(output_ids, values, round_ids={}):
+    "write actual output lines"
+    out = []
+    for obj in values:
+        row = []
+        for oid in output_ids:
+            oid_name = oid["displayName"] if len(oid["displayName"]) > 0 else oid["name"]
+            j__ = obj.get(oid_name, "")
+            if isinstance(j__, list):
+                for jv_ in j__:
+                    row.append(round(jv_, round_ids[oid_name]) if oid_name in round_ids else jv_)
+            else:
+                row.append(round(j__, round_ids[oid_name]) if oid_name in round_ids else j__)
+        out.append(row)
+    return out
+
+#------------------------------------------------------------------------------
 
 def is_absolute_path(p):
     "is absolute path"
@@ -177,6 +204,8 @@ def is_absolute_path(p):
         or (len(p) > 2 and p[1] == ":" \
             and (p[2] == "\\" \
                 or p[2] == "/"))
+
+#------------------------------------------------------------------------------
 
 def fix_system_separator(path):
     "fix system separator"
@@ -188,6 +217,8 @@ def fix_system_separator(path):
             break
         path = new_path
     return new_path
+
+#------------------------------------------------------------------------------
 
 def replace_env_vars(path):
     "replace ${ENV_VAR} in path"
@@ -210,11 +241,13 @@ def replace_env_vars(path):
 
     return path
 
+#------------------------------------------------------------------------------
 
 def default_value(dic, key, default):
     "return default value if key not there"
     return dic[key] if key in dic else default
 
+#------------------------------------------------------------------------------
 
 def read_and_parse_json_file(path):
     with open(path) as f:
@@ -223,14 +256,17 @@ def read_and_parse_json_file(path):
             "errors": ["Error opening file with path : '" + path + "'!"],
             "success": False}
 
+#------------------------------------------------------------------------------
 
 def parse_json_string(jsonString):
     return {"result": json.loads(jsonString), "errors": [], "success": True}
 
+#------------------------------------------------------------------------------
 
 def is_string_type(j):
     return isinstance(j, str)
 
+#------------------------------------------------------------------------------
 
 def find_and_replace_references(root, j):
     sp = supported_patterns()
@@ -303,6 +339,7 @@ def find_and_replace_references(root, j):
 
     return {"result": j, "errors": errors, "success": len(errors) == 0}
 
+#------------------------------------------------------------------------------
 
 def supported_patterns():
 
@@ -565,6 +602,7 @@ def supported_patterns():
 
     return supported_patterns.m
 
+#------------------------------------------------------------------------------
 
 def print_possible_errors(errs, include_warnings=False):
     if not errs["success"]:
@@ -577,6 +615,7 @@ def print_possible_errors(errs, include_warnings=False):
 
     return errs["success"]
 
+#------------------------------------------------------------------------------
 
 def create_env_json_from_json_config(crop_site_sim):
     "create the json version of the env from the json config files"
@@ -617,7 +656,7 @@ def create_env_json_from_json_config(crop_site_sim):
     env = {}
     env["type"] = "Env"
 
-    #store debug mode in env, take from sim11.json, but prefer params map
+    #store debug mode in env, take from sim.json, but prefer params map
     env["debugMode"] = simj["debug?"]
 
     cpp = {
@@ -636,27 +675,12 @@ def create_env_json_from_json_config(crop_site_sim):
     env["cropRotation"] = cropj.get("cropRotation", None)
     env["cropRotations"] = cropj.get("cropRotations", None)
     env["events"] = simj["output"]["events"]
-    env["outputs"] = {"obj-outputs?": simj["output"].get("obj-outputs?", False)}
 
     env["pathToClimateCSV"] = simj["climate.csv"]
     env["csvViaHeaderOptions"] = simj["climate.csv-options"]
     env["csvViaHeaderOptions"]["latitude"] = sitej["SiteParameters"]["Latitude"]
 
-    climate_csv_string = crop_site_sim["climate"] if "climate" in crop_site_sim else ""
-    if climate_csv_string:
-        add_climate_data_to_env(env, simj, climate_csv_string)
+    env["climateCSV"] = crop_site_sim["climate"] if "climate" in crop_site_sim else ""
 
     return env
-
-
-def add_climate_data_to_env(env, simj, climate_csv_string=""):
-    "add climate data separately to env"
-
-    #if not climate_csv_string:
-    #    with open(simj["climate.csv"]) as _:
-    #        climate_csv_string = _.read()
-
-    #if climate_csv_string:
-    #    env["climateData"] = json.loads(monica_python.readClimateDataFromCSVStringViaHeadersToJsonString(climate_csv_string, json.dumps(simj["climate.csv-options"])))
-
-    return env
+    

@@ -67,7 +67,7 @@
   "RootDistributionParam":0.002787,
   "RootFormFactor":3,
   "RootGrowthLag":-30,
-  "RootPenetrationRate":0.000442396,
+  "RootPenetrationRate":0.0011,
   "SamplingDepth":0.9,
   
   "SpecificRootLength":300,

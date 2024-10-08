@@ -77,7 +77,7 @@
   "EmergenceMoistureControlOn": true,
   "EmergenceFloodingControlOn": true,
   "__if monica internal automatic irrigation is to be used, configure donations here": "",
-  "UseAutomaticIrrigation": true,
+  "UseAutomaticIrrigation": false,
   "AutoIrrigationParams": {
     "irrigationParameters": {
       "nitrateConcentration": ["0", "mg dm-3"],

@@ -95,7 +95,7 @@
   "LT50cultivar": -24,
   "LatestHarvestDoy": -1,
   "LowTemperatureExposure": 0.654,
-  "MaxAssimilationRate": 39.7253,
+  "MaxAssimilationRate": 30,
   "MaxCropHeight": [
     0.83,
     "m"
@@ -177,12 +177,12 @@
   "RespiratoryStress": 0.54,
   "SpecificLeafArea": [
     [
-      0.00239717,
-      0.00249554,
-      0.001614,
-      0.00194341,
-      0.00188635,
-      0.0017294
+      0.0017,
+      0.0019,
+      0.0016,
+      0.0016,
+      0.0015,
+      0.0015
     ],
     "ha kg-1"
   ],
