@@ -1,0 +1,11 @@
+name,position in array,low,high,stepsize,optguess,minbound,maxbound,derived params
+StageTemperatureSum,0,0,50,2,20,0,50,
+StageTemperatureSum,1,200,400,5,250,200,400,
+StageTemperatureSum,2,200,400,5,262,200,400,
+StageTemperatureSum,3,150,300,5,180,150,300,
+StageTemperatureSum,4,400,600,5,477,400,600,
+VernalisationRequirement,1,45,55,2,47,45,55,
+DaylengthRequirement,1,17,23,2,21,17,23,
+DaylengthRequirement,2,20,25,2,24,20,25,
+DaylengthRequirement,3,20,25,2,23,20,25,
+BaseTemperature,2,1.5,2.5,0.5,1,1.5,2.5,
