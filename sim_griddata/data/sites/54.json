@@ -1,0 +1,122 @@
+{
+  "__UNDERSCORES IN FRONT MEANS IGNORE THE KEY, this is just to keep a valid JSON file": "",
+  "__!!! check and beautify JSON files with http://codebeautify.org/jsonviewer !!!": "",
+  "__this is the path which is prepended to 'include-from-file' paths, if they are relative paths": "",
+  "_include-file-base-path": "../",
+  "__soil profile parameters define the soil-column, the 'Thickness' parameter is optional and means create as many 10cm layers as necessary for the 'Thickness'": "",
+  "SiteParameters": {
+    "Latitude": 52.49128724,
+    "Slope": 0,
+    "HeightNN": [
+      0,
+      "m"
+    ],
+    "NDeposition": [
+      30,
+      "kg N ha-1 y-1"
+    ],
+    "SoilProfileParameters": [
+      {
+        "Thickness": [
+          0.3,
+          "m"
+        ],
+        "SoilOrganicCarbon": [
+          1.87,
+          "%"
+        ],
+        "KA5TextureClass": "SL2",
+        "Sand": [
+          0.79,
+          "% [0-1]"
+        ],
+        "Silt": [
+          0.15,
+          "% [0-1]"
+        ],
+        "Clay": [
+          0.06,
+          "% [0-1]"
+        ],
+        "SoilBulkDensity": [
+          1300.0,
+          "kg m-3"
+        ]
+      },
+      {
+        "Thickness": [
+          0.3,
+          "m"
+        ],
+        "SoilOrganicCarbon": [
+          0.74,
+          "%"
+        ],
+        "KA5TextureClass": "SL2",
+        "Sand": [
+          0.8,
+          "% [0-1]"
+        ],
+        "Silt": [
+          0.14,
+          "% [0-1]"
+        ],
+        "Clay": [
+          0.06,
+          "% [0-1]"
+        ],
+        "SoilBulkDensity": [
+          1450.0,
+          "kg m-3"
+        ]
+      },
+      {
+        "Thickness": [
+          1.6,
+          "m"
+        ],
+        "SoilOrganicCarbon": [
+          0.27,
+          "%"
+        ],
+        "KA5TextureClass": "SL2",
+        "Sand": [
+          0.8,
+          "% [0-1]"
+        ],
+        "Silt": [
+          0.14,
+          "% [0-1]"
+        ],
+        "Clay": [
+          0.07,
+          "% [0-1]"
+        ],
+        "SoilBulkDensity": [
+          1490.0,
+          "kg m-3"
+        ]
+      }
+    ]
+  },
+  "SoilTemperatureParameters": [
+    "include-from-file",
+    "general/soil-temperature.json"
+  ],
+  "EnvironmentParameters": [
+    "include-from-file",
+    "general/environment.json"
+  ],
+  "SoilOrganicParameters": [
+    "include-from-file",
+    "general/soil-organic.json"
+  ],
+  "SoilTransportParameters": [
+    "include-from-file",
+    "general/soil-transport.json"
+  ],
+  "SoilMoistureParameters": [
+    "include-from-file",
+    "general/soil-moisture.json"
+  ]
+}
