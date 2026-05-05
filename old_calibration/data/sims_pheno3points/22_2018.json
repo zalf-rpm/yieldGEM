@@ -16,7 +16,7 @@
       "Radiation": [
         "globrad",
         "/",
-        100
+        10000
       ],
       "Windspeed": "wind",
       "RelHumCalc": "relhumid"
