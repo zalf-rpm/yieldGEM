@@ -1,0 +1,8 @@
+{  
+  "Carbamid":0.5,
+  "NH4":0.25,
+  "NO3":0.25,
+  "id":"KAS",
+  "name":"KAS-32",
+  "type":"MineralFertiliserParameters"
+}
