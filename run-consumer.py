@@ -251,19 +251,24 @@ def finalize_outputs(setup_id: int, total_rows: int, ncols: int):
 def write_daily_csv(daily_data_dict, path_to_csv_output_dir):
     """write daily yields data to CSV file"""
 
+    print(f"[DEBUG] write_daily_csv called with data entries: {len(daily_data_dict)}")
+
     if not daily_data_dict:
+        print("[DEBUG] No daily data to write")
         return
 
     # Create output directory if needed
     if not os.path.exists(path_to_csv_output_dir):
         try:
             os.makedirs(path_to_csv_output_dir)
+            print(f"[DEBUG] Created directory: {path_to_csv_output_dir}")
         except OSError:
             print("c: Couldn't create dir:", path_to_csv_output_dir, "! Exiting.")
             return
 
     # daily_data_dict structure: {(crop, cm_count): {date: data_dict, ...}}
     for (crop, cm_count), date_to_data in daily_data_dict.items():
+        print(f"[DEBUG] Processing crop={crop}, cm_count={cm_count}, dates={len(date_to_data)}")
         file_path = f"{path_to_csv_output_dir}{crop}_daily_yields_{cm_count}.csv"
 
         # Sort by date and get all unique field names
@@ -446,15 +451,21 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
                 # Check if this is daily data by looking at message origSpec
                 is_daily = any(d.get("origSpec", "") == '"daily"' for d in msg.get("data", []))
 
+                origSpecs = [d.get("origSpec", "") for d in msg.get("data", [])]
+                print(f"[DEBUG] origSpecs: {origSpecs}, is_daily: {is_daily}")
+
                 if is_daily:
                     # Store daily data separately (key: date, value: output dict)
+                    print(f"[DEBUG] Processing daily data, output keys: {list(output.keys())}")
                     for date_key, date_data in output.items():
                         crop = str(date_data.get("Crop", "unknown")).strip()
                         crop = crop.replace("/", "").replace(" ", "") or "unknown"
                         cm_count = date_data.get("CM-count")
+                        print(f"[DEBUG] Date: {date_key}, Crop: {crop}, CM-count: {cm_count}")
                         if cm_count:
                             key = (crop, cm_count)
                             data["daily-data"][key][date_key] = date_data
+                            print(f"[DEBUG] Stored daily data for key: {key}")
                 else:
                     # Store regular (event-based) data
                     data["row-col-data"][row][col].append(output)
@@ -576,26 +587,36 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
             # elapsed = timeit.default_timer() - start_time_recv
             # print("time to receive message" + str(elapsed))
             # start_time_proc = timeit.default_timer()
+            print(f"[DEBUG] Received message #{process_message.received_env_count}")
             leave = process_message(msg)
             # elapsed = timeit.default_timer() - start_time_proc
             # print("time to process message" + str(elapsed))
         except zmq.error.Again as _e:
             print('no response from the server (with "timeout"=%d ms) ' % socket.RCVTIMEO)
             for setup_id, data in setup_id_to_data.items():
+                print(f"[DEBUG] Setup {setup_id} - daily-data keys: {list(data.get('daily-data', {}).keys())}")
+                print(f"[DEBUG] Setup {setup_id} - daily-data total entries: {sum(len(v) for v in data.get('daily-data', {}).values())}")
                 # finalize_outputs(setup_id, data["nrows"], data["ncols"])
                 # Write daily CSV data if available
                 if data.get("daily-data"):
                     path_to_csv_out_dir = config["csv-out"] + str(setup_id) + "/"
+                    print(f"[DEBUG] Writing daily CSV to: {path_to_csv_out_dir}")
                     write_daily_csv(dict(data["daily-data"]), path_to_csv_out_dir)
+                else:
+                    print(f"[DEBUG] No daily-data found for setup {setup_id}")
             return
         except Exception as e:
             print("Exception:", e)
+            import traceback
+            traceback.print_exc()
             # continue
 
     # Write daily CSV data when exiting normally
     for setup_id, data in setup_id_to_data.items():
+        print(f"[DEBUG] Normal exit - Setup {setup_id} - daily-data keys: {list(data.get('daily-data', {}).keys())}")
         if data.get("daily-data"):
             path_to_csv_out_dir = config["csv-out"] + str(setup_id) + "/"
+            print(f"[DEBUG] Writing daily CSV to: {path_to_csv_out_dir}")
             write_daily_csv(dict(data["daily-data"]), path_to_csv_out_dir)
 
     print("exiting run_consumer()")
