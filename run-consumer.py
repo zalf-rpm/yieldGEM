@@ -511,6 +511,12 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
 
                 data["next-row"] += 1  # move to next row (to be written)
 
+                # Write daily CSV data periodically to avoid waiting until the end
+                if data.get("daily-data"):
+                    path_to_csv_out_dir = config["csv-out"] + str(setup_id) + "/"
+                    write_daily_csv(dict(data["daily-data"]), path_to_csv_out_dir)
+                    print(f"[DEBUG] Wrote daily CSV during processing for setup {setup_id}")
+
                 if leave_after_finished_run \
                         and ((data["end_row"] < 0 and data["next-row"] > data["nrows"] - 1)
                              or (0 <= data["end_row"] < data["next-row"])):
