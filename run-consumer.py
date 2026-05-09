@@ -458,10 +458,11 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
                     # Store daily data separately (key: date, value: output dict)
                     print(f"[DEBUG] Processing daily data, output keys: {list(output.keys())}")
                     for date_key, date_data in output.items():
+                        print(f"[DEBUG] date_data type: {type(date_data)}, content: {date_data}")
                         crop = str(date_data.get("Crop", "unknown")).strip()
                         crop = crop.replace("/", "").replace(" ", "") or "unknown"
                         cm_count = date_data.get("CM-count")
-                        print(f"[DEBUG] Date: {date_key}, Crop: {crop}, CM-count: {cm_count}")
+                        print(f"[DEBUG] Date: {date_key}, Crop: {crop}, CM-count: {cm_count}, all_keys: {list(date_data.keys())}")
                         if cm_count:
                             key = (crop, cm_count)
                             data["daily-data"][key][date_key] = date_data
