@@ -328,9 +328,7 @@
 				"Date",
 				"CM-count",
 				"Crop",
-				"Yield",
-				"AbBiom",
-				"LAI"
+				"Yield"
 			]
 		]
 	},
