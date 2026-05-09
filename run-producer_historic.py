@@ -237,19 +237,19 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
             sim_json["climate.csv-options"]["end-date"] = str(setup["end_date"]) 
         #sim_json["include-file-base-path"] = paths["include-file-base-path"]
 
-        if setup["bgr"]:
+        if setup.get("daily-yields"):
+            sim_json["output"]["events"] = sim_json["output"]["daily-yields"]
+        elif setup["bgr"]:
             if setup["nc_mode"]:
                 sim_json["output"]["events"] = sim_json["output"]["nc-bgr-events"]
             else:
                 sim_json["output"]["events"] = sim_json["output"]["bgr-events"]
         elif setup["nc_mode"]:
             sim_json["output"]["events"] = sim_json["output"]["nc-events"]
-        elif setup.get("daily-yields"):
-            sim_json["output"]["events"] = sim_json["output"]["daily-yields"]
-        elif setup["yields"]:
-            sim_json["output"]["events"] = sim_json["output"]["yields-events"]
         elif setup["pheno"]:
             sim_json["output"]["events"] = sim_json["output"]["backup-pheno-events"]
+        elif setup["yields"]:
+            sim_json["output"]["events"] = sim_json["output"]["yields-events"]
 
         sim_json["output"]["obj-outputs?"] = not setup["nc_mode"] and not setup["bgr"]
 
