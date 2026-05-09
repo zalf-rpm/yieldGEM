@@ -584,11 +584,19 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
         except zmq.error.Again as _e:
             print('no response from the server (with "timeout"=%d ms) ' % socket.RCVTIMEO)
             for setup_id, data in setup_id_to_data.items():
+                print(f"[FINAL] Setup {setup_id}: daily-data has {len(data.get('daily-data', {}))} keys")
                 # finalize_outputs(setup_id, data["nrows"], data["ncols"])
                 # Write daily CSV data if available
                 if data.get("daily-data"):
                     path_to_csv_out_dir = config["csv-out"] + str(setup_id) + "/"
-                    write_daily_csv(dict(data["daily-data"]), path_to_csv_out_dir)
+                    print(f"[FINAL] Writing daily CSV for setup {setup_id} to {path_to_csv_out_dir}")
+                    try:
+                        write_daily_csv(dict(data["daily-data"]), path_to_csv_out_dir)
+                        print(f"[FINAL] Successfully wrote daily CSV")
+                    except Exception as e:
+                        print(f"[FINAL] Error writing daily CSV: {e}")
+                        import traceback
+                        traceback.print_exc()
             return
         except Exception as e:
             print("Exception:", e)
