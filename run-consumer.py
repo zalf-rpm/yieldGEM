@@ -248,6 +248,51 @@ def finalize_outputs(setup_id: int, total_rows: int, ncols: int):
             write_row_to_grids.file_rows_written[path_to_file] = total_rows
 
 
+def write_daily_csv(daily_data_dict, path_to_csv_output_dir):
+    """write daily yields data to CSV file"""
+
+    if not daily_data_dict:
+        return
+
+    # Create output directory if needed
+    if not os.path.exists(path_to_csv_output_dir):
+        try:
+            os.makedirs(path_to_csv_output_dir)
+        except OSError:
+            print("c: Couldn't create dir:", path_to_csv_output_dir, "! Exiting.")
+            return
+
+    # daily_data_dict structure: {(crop, cm_count): {date: data_dict, ...}}
+    for (crop, cm_count), date_to_data in daily_data_dict.items():
+        file_path = f"{path_to_csv_output_dir}{crop}_daily_yields_{cm_count}.csv"
+
+        # Sort by date and get all unique field names
+        sorted_dates = sorted(date_to_data.keys())
+        if not sorted_dates:
+            continue
+
+        # Collect all field names
+        all_fields = set()
+        for data in date_to_data.values():
+            all_fields.update(data.keys())
+
+        fieldnames = ["Date"] + sorted([f for f in all_fields if f != "Date" and f != "CM-count"])
+
+        try:
+            with open(file_path, "w", newline='') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writeheader()
+
+                for date_str in sorted_dates:
+                    row = {"Date": date_str}
+                    row.update({k: v for k, v in date_to_data[date_str].items() if k in fieldnames})
+                    writer.writerow(row)
+
+            print(f"Wrote daily CSV: {file_path}")
+        except Exception as e:
+            print(f"Error writing daily CSV {file_path}: {e}")
+
+
 def run_consumer(leave_after_finished_run=True, server={"server": None, "port": None}, shared_id=None):
     """collect data from workers"""
 
@@ -348,6 +393,7 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
         "header": header,
         "out_dir_exists": False,
         "row-col-data": defaultdict(lambda: defaultdict(list)),
+        "daily-data": defaultdict(lambda: defaultdict(dict)),
         "datacell-count": datacells_per_row.copy(),
         "next-row": start_row
     })
@@ -396,7 +442,22 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
             if is_nodata:
                 data["row-col-data"][row][col] = -9999
             else:
-                data["row-col-data"][row][col].append(create_output(msg))
+                output = create_output(msg)
+                # Check if this is daily data by looking at message origSpec
+                is_daily = any(d.get("origSpec", "") == '"daily"' for d in msg.get("data", []))
+
+                if is_daily:
+                    # Store daily data separately (key: date, value: output dict)
+                    for date_key, date_data in output.items():
+                        crop = str(date_data.get("Crop", "unknown")).strip()
+                        crop = crop.replace("/", "").replace(" ", "") or "unknown"
+                        cm_count = date_data.get("CM-count")
+                        if cm_count:
+                            key = (crop, cm_count)
+                            data["daily-data"][key][date_key] = date_data
+                else:
+                    # Store regular (event-based) data
+                    data["row-col-data"][row][col].append(output)
             data["datacell-count"][row] -= 1
 
             process_message.received_env_count = process_message.received_env_count + 1
@@ -522,6 +583,10 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
             print('no response from the server (with "timeout"=%d ms) ' % socket.RCVTIMEO)
             for setup_id, data in setup_id_to_data.items():
                 finalize_outputs(setup_id, data["nrows"], data["ncols"])
+                # Write daily CSV data if available
+                if data.get("daily-data"):
+                    path_to_csv_out_dir = config["csv-out"] + str(setup_id) + "/"
+                    write_daily_csv(dict(data["daily-data"]), path_to_csv_out_dir)
             return
         except Exception as e:
             print("Exception:", e)

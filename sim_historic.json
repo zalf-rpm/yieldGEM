@@ -313,13 +313,24 @@
 			]
 		],
 
-		"bgr-events": [	
+		"bgr-events": [
 			"daily", [
 				"Date",
 				"DOY",
 				"Precip",
 				["Mois", [1, 20]],
 				["STemp", [1, 20]]
+			]
+		],
+
+		"daily-yields": [
+			"daily", [
+				"Date",
+				"CM-count",
+				"Crop",
+				"Yield",
+				"AbBiom",
+				"LAI"
 			]
 		]
 	},
@@ -328,8 +339,8 @@
 	"LayerThickness": [0.1, "m"],
 
 	"UseSecondaryYields": false,
-	"NitrogenResponseOn": true,
-	"WaterDeficitResponseOn": true,
+	"NitrogenResponseOn": false,
+	"WaterDeficitResponseOn": false,
 	"EmergenceMoistureControlOn": false,
 	"EmergenceFloodingControlOn": false,
 
