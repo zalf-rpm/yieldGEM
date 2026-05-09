@@ -489,12 +489,12 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
                             print("c: Couldn't create dir:", path_to_csv_out_dir, "! Exiting.")
                             exit(1)
 
-                write_row_to_grids(data["row-col-data"], data["next-row"], data["ncols"], data["header"],
-                                   path_to_out_dir, path_to_csv_out_dir, setup_id)
+                # write_row_to_grids(data["row-col-data"], data["next-row"], data["ncols"], data["header"],
+                #                    path_to_out_dir, path_to_csv_out_dir, setup_id)
 
-                debug_msg = "wrote row: " + str(data["next-row"]) + " next-row: " + str(
-                    data["next-row"] + 1) + " rows unwritten: " + str(list(data["row-col-data"].keys()))
-                print(debug_msg)
+                # debug_msg = "wrote row: " + str(data["next-row"]) + " next-row: " + str(
+                #     data["next-row"] + 1) + " rows unwritten: " + str(list(data["row-col-data"].keys()))
+                # print(debug_msg)
                 # debug_file.write(debug_msg + "\n")
 
                 data["next-row"] += 1  # move to next row (to be written)
@@ -582,7 +582,7 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
         except zmq.error.Again as _e:
             print('no response from the server (with "timeout"=%d ms) ' % socket.RCVTIMEO)
             for setup_id, data in setup_id_to_data.items():
-                finalize_outputs(setup_id, data["nrows"], data["ncols"])
+                # finalize_outputs(setup_id, data["nrows"], data["ncols"])
                 # Write daily CSV data if available
                 if data.get("daily-data"):
                     path_to_csv_out_dir = config["csv-out"] + str(setup_id) + "/"
@@ -591,6 +591,12 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
         except Exception as e:
             print("Exception:", e)
             # continue
+
+    # Write daily CSV data when exiting normally
+    for setup_id, data in setup_id_to_data.items():
+        if data.get("daily-data"):
+            path_to_csv_out_dir = config["csv-out"] + str(setup_id) + "/"
+            write_daily_csv(dict(data["daily-data"]), path_to_csv_out_dir)
 
     print("exiting run_consumer()")
     # debug_file.close()

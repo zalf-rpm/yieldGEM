@@ -244,6 +244,8 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
                 sim_json["output"]["events"] = sim_json["output"]["bgr-events"]
         elif setup["nc_mode"]:
             sim_json["output"]["events"] = sim_json["output"]["nc-events"]
+        elif setup.get("daily-yields"):
+            sim_json["output"]["events"] = sim_json["output"]["daily-yields"]
         elif setup["yields"]:
             sim_json["output"]["events"] = sim_json["output"]["yields-events"]
         elif setup["pheno"]:
