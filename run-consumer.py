@@ -262,14 +262,9 @@ def write_daily_csv(daily_data_dict, path_to_csv_output_dir):
             print("c: Couldn't create dir:", path_to_csv_output_dir, "! Exiting.")
             return
 
-    # daily_data_dict structure: {(crop, cm_count, row, col): {date: data_dict, ...}}
-    for key, date_to_data in daily_data_dict.items():
-        if len(key) == 4:  # New format with row, col
-            crop, cm_count, row, col = key
-            file_path = f"{path_to_csv_output_dir}{crop}_daily_yields_{row}_{col}.csv"
-        else:  # Old format (backward compatibility)
-            crop, cm_count = key
-            file_path = f"{path_to_csv_output_dir}{crop}_daily_yields_{cm_count}.csv"
+    # daily_data_dict structure: {(crop, cm_count): {date: data_dict, ...}}
+    for (crop, cm_count), date_to_data in daily_data_dict.items():
+        file_path = f"{path_to_csv_output_dir}{crop}_daily_yields_{cm_count}.csv"
 
         # Sort by date and get all unique field names
         sorted_dates = sorted(date_to_data.keys())
@@ -291,9 +286,9 @@ def write_daily_csv(daily_data_dict, path_to_csv_output_dir):
                     writer.writeheader()
 
                 for date_str in sorted_dates:
-                    row = {"Date": date_str}
-                    row.update({k: v for k, v in date_to_data[date_str].items() if k in fieldnames})
-                    writer.writerow(row)
+                    csv_row = {"Date": date_str}
+                    csv_row.update({k: v for k, v in date_to_data[date_str].items() if k in fieldnames})
+                    writer.writerow(csv_row)
 
             print(f"Appended {len(sorted_dates)} rows to daily CSV: {file_path}")
         except Exception as e:
@@ -454,14 +449,13 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
                 is_daily = any(d.get("origSpec", "") == '"daily"' for d in msg.get("data", []))
 
                 if is_daily:
-                    # Store daily data separately - include row,col to distinguish different grid cells
+                    # Store daily data separately
                     for date_key, date_data in output.items():
                         crop = str(date_data.get("Crop", "unknown")).strip()
                         crop = crop.replace("/", "").replace(" ", "") or "unknown"
                         cm_count = date_data.get("CM-count")
                         if cm_count is not None:
-                            # Use (crop, cm_count, row, col) as key to distinguish grid cells
-                            key = (crop, cm_count, row, col)
+                            key = (crop, cm_count)
                             data["daily-data"][key][date_key] = date_data
                 else:
                     # Store regular (event-based) data
