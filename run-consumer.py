@@ -259,7 +259,7 @@ def finalize_outputs(setup_id: int, total_rows: int, ncols: int):
 
 
 def write_daily_csv(daily_data_dict, path_to_csv_output_dir):
-    """write daily yields data to CSV file"""
+    """write daily yields data to CSV file."""
 
     if not daily_data_dict:
         return
@@ -272,11 +272,11 @@ def write_daily_csv(daily_data_dict, path_to_csv_output_dir):
             print("c: Couldn't create dir:", path_to_csv_output_dir, "! Exiting.")
             return
 
-    # daily_data_dict structure: {(crop, cm_count): {date: data_dict, ...}}
+    # daily_data_dict structure: {(crop, cm_count): {(row, col, date): data_dict, ...}}
     for (crop, cm_count), date_to_data in daily_data_dict.items():
         file_path = f"{path_to_csv_output_dir}{crop}_daily_yields_{cm_count}.csv"
 
-        # Sort by date and get all unique field names
+        # Sort by date and grid cell.
         records = sorted(
             date_to_data.values(),
             key=lambda data: (str(data.get("Date", "")), data.get("Srow", -1), data.get("Scol", -1))
@@ -284,12 +284,32 @@ def write_daily_csv(daily_data_dict, path_to_csv_output_dir):
         if not records:
             continue
 
-        # Collect all field names
+        preferred_fields = [
+            "Date",
+            "Srow",
+            "Scol",
+            "Crow",
+            "Ccol",
+            "SoilId",
+            "CM-count",
+            "Crop",
+            "Tmin",
+            "Tavg",
+            "Tmax",
+            "Precip",
+            "Wind",
+            "Globrad",
+            "Relhumid",
+            "Sunhours",
+            "ET0",
+            "Yield",
+        ]
         all_fields = set()
-        for data in records:
-            all_fields.update(data.keys())
+        for record in records:
+            all_fields.update(record.keys())
 
-        fieldnames = ["Date"] + sorted([f for f in all_fields if f != "Date" and f != "CM-count"])
+        fieldnames = [field for field in preferred_fields if field in all_fields]
+        fieldnames.extend(sorted(field for field in all_fields if field not in fieldnames))
 
         try:
             with open(file_path, "w", newline='') as csvfile:
@@ -297,11 +317,9 @@ def write_daily_csv(daily_data_dict, path_to_csv_output_dir):
                 writer.writeheader()
 
                 for record in records:
-                    csv_row = {"Date": record.get("Date", "")}
-                    csv_row.update({k: v for k, v in record.items() if k in fieldnames})
-                    writer.writerow(csv_row)
+                    writer.writerow({k: record.get(k, "") for k in fieldnames})
 
-            print(f"Appended {len(records)} rows to daily CSV: {file_path}")
+            print(f"Wrote {len(records)} daily rows to CSV: {file_path}")
         except Exception as e:
             print(f"Error writing daily CSV {file_path}: {e}")
 
@@ -476,6 +494,12 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
                         cm_count = date_data.get("CM-count", "daily")
                         date_data["Srow"] = row
                         date_data["Scol"] = col
+                        if "crow" in custom_id:
+                            date_data["Crow"] = custom_id["crow"]
+                        if "ccol" in custom_id:
+                            date_data["Ccol"] = custom_id["ccol"]
+                        if "soil_id" in custom_id:
+                            date_data["SoilId"] = custom_id["soil_id"]
                         key = (crop, cm_count)
                         record_key = (row, col, date_key)
                         data["daily-data"][key][record_key] = date_data

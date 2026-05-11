@@ -328,6 +328,15 @@
 				"Date",
 				"CM-count",
 				"Crop",
+				"Tmin",
+				"Tavg",
+				"Tmax",
+				"Precip",
+				"Wind",
+				"Globrad",
+				"Relhumid",
+				"Sunhours",
+				"ET0",
 				"Yield"
 			]
 		]
