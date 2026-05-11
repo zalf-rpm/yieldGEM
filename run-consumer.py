@@ -277,32 +277,40 @@ def write_daily_csv(daily_data_dict, path_to_csv_output_dir):
         file_path = f"{path_to_csv_output_dir}{crop}_daily_yields_{cm_count}.csv"
 
         # Sort by date and get all unique field names
-        sorted_dates = sorted(date_to_data.keys())
-        if not sorted_dates:
+        records = sorted(
+            date_to_data.values(),
+            key=lambda data: (str(data.get("Date", "")), data.get("Srow", -1), data.get("Scol", -1))
+        )
+        if not records:
             continue
 
         # Collect all field names
         all_fields = set()
-        for data in date_to_data.values():
+        for data in records:
             all_fields.update(data.keys())
 
         fieldnames = ["Date"] + sorted([f for f in all_fields if f != "Date" and f != "CM-count"])
 
         try:
-            file_exists = os.path.isfile(file_path)
-            with open(file_path, "a" if file_exists else "w", newline='') as csvfile:
+            with open(file_path, "w", newline='') as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                if not file_exists:
-                    writer.writeheader()
+                writer.writeheader()
 
-                for date_str in sorted_dates:
-                    csv_row = {"Date": date_str}
-                    csv_row.update({k: v for k, v in date_to_data[date_str].items() if k in fieldnames})
+                for record in records:
+                    csv_row = {"Date": record.get("Date", "")}
+                    csv_row.update({k: v for k, v in record.items() if k in fieldnames})
                     writer.writerow(csv_row)
 
-            print(f"Appended {len(sorted_dates)} rows to daily CSV: {file_path}")
+            print(f"Appended {len(records)} rows to daily CSV: {file_path}")
         except Exception as e:
             print(f"Error writing daily CSV {file_path}: {e}")
+
+
+def flush_daily_csv(data, setup_id, path_to_csv_output_dir):
+    if data.get("daily-data"):
+        print(f"[FINAL] Writing daily CSV for setup {setup_id} to {path_to_csv_output_dir}")
+        write_daily_csv(dict(data["daily-data"]), path_to_csv_output_dir)
+        data["daily-data"].clear()
 
 
 def run_consumer(leave_after_finished_run=True, server={"server": None, "port": None}, shared_id=None):
@@ -456,17 +464,21 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
             else:
                 output = create_output(msg)
                 # Check if this is daily data by looking at message origSpec
-                is_daily = any(d.get("origSpec", "") == '"daily"' for d in msg.get("data", []))
+                is_daily = any(d.get("origSpec", "").strip('"') == "daily" for d in msg.get("data", []))
 
                 if is_daily:
                     # Store daily data separately
                     for date_key, date_data in output.items():
+                        if "Date" not in date_data:
+                            continue
                         crop = str(date_data.get("Crop", "unknown")).strip()
                         crop = crop.replace("/", "").replace(" ", "") or "unknown"
-                        cm_count = date_data.get("CM-count")
-                        if cm_count is not None:
-                            key = (crop, cm_count)
-                            data["daily-data"][key][date_key] = date_data
+                        cm_count = date_data.get("CM-count", "daily")
+                        date_data["Srow"] = row
+                        date_data["Scol"] = col
+                        key = (crop, cm_count)
+                        record_key = (row, col, date_key)
+                        data["daily-data"][key][record_key] = date_data
                 else:
                     # Store regular (event-based) data
                     data["row-col-data"][row][col].append(output)
@@ -515,6 +527,8 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
                         and ((data["end_row"] < 0 and data["next-row"] > data["nrows"] - 1)
                              or (0 <= data["end_row"] < data["next-row"])):
                     process_message.setup_count += 1
+                    flush_daily_csv(data, setup_id, path_to_csv_out_dir)
+                    leave = True
 
         elif write_normal_output_files:
             if msg.get("type", "") in ["jobs-per-cell", "no-data", "setup_data"]:
@@ -599,9 +613,8 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
                 # Write daily CSV data if available
                 if data.get("daily-data"):
                     path_to_csv_out_dir = config["csv-out"] + str(setup_id) + "/"
-                    print(f"[FINAL] Writing daily CSV for setup {setup_id} to {path_to_csv_out_dir}")
                     try:
-                        write_daily_csv(dict(data["daily-data"]), path_to_csv_out_dir)
+                        flush_daily_csv(data, setup_id, path_to_csv_out_dir)
                         print(f"[FINAL] Successfully wrote daily CSV")
                     except Exception as e:
                         print(f"[FINAL] Error writing daily CSV: {e}")
@@ -616,7 +629,7 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
     for setup_id, data in setup_id_to_data.items():
         if data.get("daily-data"):
             path_to_csv_out_dir = config["csv-out"] + str(setup_id) + "/"
-            write_daily_csv(dict(data["daily-data"]), path_to_csv_out_dir)
+            flush_daily_csv(data, setup_id, path_to_csv_out_dir)
 
     print("exiting run_consumer()")
     # debug_file.close()
