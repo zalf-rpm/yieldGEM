@@ -52,24 +52,34 @@ USE_LANDUSE = False
 
 def create_output(msg):
     cm_count_to_vals = defaultdict(dict)
+    has_daily_output = False
     for data in msg.get("data", []):
         results = data.get("results", [])
 
-        is_daily_section = data.get("origSpec", "") == '"daily"'
+        is_daily_section = data.get("origSpec", "").strip('"') == "daily"
+        has_daily_output = has_daily_output or is_daily_section
 
         for vals in results:
-            if "CM-count" in vals:
+            if is_daily_section and "Date" in vals:
+                vals2 = {}
+                for key, val in vals.items():
+                    if type(val) == list:
+                        for i, v in enumerate(val):
+                            vals2[f"{key}_{i + 1}"] = v
+                    else:
+                        vals2[key] = val
+                cm_count_to_vals[vals["Date"]].update(vals2)
+            elif "CM-count" in vals:
                 cm_count_to_vals[vals["CM-count"]].update(vals)
-            elif is_daily_section and "Date" in vals:
-                cm_count_to_vals[vals["Date"]].update(vals)
 
     if not cm_count_to_vals:
         return cm_count_to_vals
 
-    cmcs = sorted(cm_count_to_vals.keys())
-    last_cmc = cmcs[-1]
-    if "Year" not in cm_count_to_vals[last_cmc]:
-        cm_count_to_vals.pop(last_cmc, None)
+    if not has_daily_output:
+        cmcs = sorted(cm_count_to_vals.keys())
+        last_cmc = cmcs[-1]
+        if "Year" not in cm_count_to_vals[last_cmc]:
+            cm_count_to_vals.pop(last_cmc, None)
 
     return cm_count_to_vals
 
