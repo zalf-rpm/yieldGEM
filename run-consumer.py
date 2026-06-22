@@ -297,12 +297,23 @@ def write_daily_csv(daily_data_dict, path_to_csv_output_dir):
             "Tavg",
             "Tmax",
             "Precip",
-            "Wind",
-            "Globrad",
             "Relhumid",
-            "Sunhours",
             "ET0",
+            "Fc1",
+            "Pwp1",
+            "Sand1",
+            "SOC1",
+            "Fc2",
+            "Pwp2",
+            "Sand2",
+            "SOC2",
+            "Fc3",
+            "Pwp3",
+            "Sand3",
+            "SOC3",
             "Yield",
+            "AbBiom",
+            "LAI"
         ]
         all_fields = set()
         for record in records:
