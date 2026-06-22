@@ -297,7 +297,7 @@ def write_daily_csv(daily_data_dict, path_to_csv_output_dir):
             "Tavg",
             "Tmax",
             "Precip",
-            "globrad",
+            "Globrad",
             "Relhumid",
             "ET0",
             "Yield",
