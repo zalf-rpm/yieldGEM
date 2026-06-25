@@ -328,25 +328,25 @@ def run_producer(server = {"server": None, "port": None}, shared_id = None):
                         # print("sent nodata env ", sent_env_count, " customId: ", env_template["customId"])
                         sent_env_count += 1
                     continue
-                ################################################
-                # 扣掉没有气象的数模拟
-                ################################################
-                if srow == 855:
-                    env_template["customId"] = {
-                        "setup_id": setup_id,
-                        "srow": srow,
-                        "scol": scol,
-                        "soil_id": soil_id,
-                        "bgr": setup["bgr"],
-                        "yields": setup["yields"],
-                        "pheno": setup["pheno"],
-                        "env_id": sent_env_count,
-                        "nodata": True
-                    }
-                    if not DEBUG_DONOT_SEND:
-                        socket.send_json(env_template)
-                        sent_env_count += 1
-                    continue
+                # ################################################
+                # # 扣掉没有气象的数模拟
+                # ################################################
+                # if srow == 855:
+                #     env_template["customId"] = {
+                #         "setup_id": setup_id,
+                #         "srow": srow,
+                #         "scol": scol,
+                #         "soil_id": soil_id,
+                #         "bgr": setup["bgr"],
+                #         "yields": setup["yields"],
+                #         "pheno": setup["pheno"],
+                #         "env_id": sent_env_count,
+                #         "nodata": True
+                #     }
+                #     if not DEBUG_DONOT_SEND:
+                #         socket.send_json(env_template)
+                #         sent_env_count += 1
+                #     continue
 
                 # get coordinate of closeest climate element of real soil-cell
                 sh = yllcorner + (scellsize / 2) + (srows - srow - 1) * scellsize

@@ -666,6 +666,7 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
 
     # Write daily CSV data when exiting normally
     for setup_id, data in setup_id_to_data.items():
+        finalize_outputs(setup_id, data["nrows"], data["ncols"])
         if data.get("daily-data"):
             path_to_csv_out_dir = config["csv-out"] + str(setup_id) + "/"
             flush_daily_csv(data, setup_id, path_to_csv_out_dir)
