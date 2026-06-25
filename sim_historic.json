@@ -339,6 +339,25 @@
 				"AbBiom",
 				"LAI"
 			]
+		],
+		"soil-events": [
+		"crop", [
+			["CM-count", "FIRST"],
+			["Year", "LAST"],
+			["Crop", "FIRST"],
+			["Fc|Fc1", [1, 3, "AVG"]],
+			["Pwp|Pwp1", [1, 3, "AVG"]],
+			["Sand|Sand1", [1, 3, "AVG"]],
+			["SOC|SOC1",  [1, 3, "AVG"]],
+			["Fc|Fc2", [4, 6, "AVG"]],
+			["Pwp|Pwp2", [4, 6, "AVG"]],
+			["Sand|Sand2", [4, 6, "AVG"]],
+			["SOC|SOC2",  [4, 6, "AVG"]],
+			["Fc|Fc3", [7, 12, "AVG"]],
+			["Pwp|Pwp3", [7, 12, "AVG"]],
+			["Sand|Sand3", [7, 12, "AVG"]],
+			["SOC|SOC3",  [7, 12, "AVG"]]
+		]
 		]
 	},
 

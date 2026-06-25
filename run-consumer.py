@@ -101,7 +101,20 @@ def write_row_to_grids(row_col_data, row, ncols, header, path_to_output_dir, pat
     make_dict_nparr = lambda: defaultdict(lambda: np.full((ncols,), -9999, dtype=float))
 
     output_grids = {
-        "Yield": {"data": make_dict_nparr(), "cast-to": "float", "digits": 1},
+        # "Yield": {"data": make_dict_nparr(), "cast-to": "float", "digits": 1},
+
+        "Fc1": {"data": make_dict_nparr(), "cast-to": "float", "digits": 4},
+        "Pwp1": {"data": make_dict_nparr(), "cast-to": "float", "digits": 4},
+        "Sand1": {"data": make_dict_nparr(), "cast-to": "float", "digits": 4},
+        "SOC1": {"data": make_dict_nparr(), "cast-to": "float", "digits": 4},
+        "Fc2": {"data": make_dict_nparr(), "cast-to": "float", "digits": 4},
+        "Pwp2": {"data": make_dict_nparr(), "cast-to": "float", "digits": 4},
+        "Sand2": {"data": make_dict_nparr(), "cast-to": "float", "digits": 4},
+        "SOC2": {"data": make_dict_nparr(), "cast-to": "float", "digits": 4},
+        "Fc3": {"data": make_dict_nparr(), "cast-to": "float", "digits": 4},
+        "Pwp3": {"data": make_dict_nparr(), "cast-to": "float", "digits": 4},
+        "Sand3": {"data": make_dict_nparr(), "cast-to": "float", "digits": 4},
+        "SOC3": {"data": make_dict_nparr(), "cast-to": "float", "digits": 4},
         # "AbBiom": {"data" : make_dict_nparr(), "cast-to": "float", "digits": 1},
         # "LAI": {"data" : make_dict_nparr(), "cast-to": "float", "digits": 1},
         # "EffRootDep": {"data" : make_dict_nparr(), "cast-to": "float", "digits": 1},
@@ -369,7 +382,9 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
     socket.connect("tcp://" + config["server"] + ":" + config["port"])
     socket.RCVTIMEO = config["timeout"]
     leave = False
-    write_normal_output_files = True
+    ############################################
+    #是否写入csv
+    write_normal_output_files = False
 
     path_to_soil_grid = TEMPLATE_SOIL_PATH.format(local_path_to_data_dir=paths["path-to-data-dir"])
     soil_epsg_code = int(path_to_soil_grid.split("/")[-1].split("_")[2])
@@ -537,8 +552,8 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
                             print("c: Couldn't create dir:", path_to_csv_out_dir, "! Exiting.")
                             exit(1)
 
-                # write_row_to_grids(data["row-col-data"], data["next-row"], data["ncols"], data["header"],
-                #                    path_to_out_dir, path_to_csv_out_dir, setup_id)
+                write_row_to_grids(data["row-col-data"], data["next-row"], data["ncols"], data["header"],
+                                   path_to_out_dir, path_to_csv_out_dir, setup_id)
 
                 # debug_msg = "wrote row: " + str(data["next-row"]) + " next-row: " + str(
                 #     data["next-row"] + 1) + " rows unwritten: " + str(list(data["row-col-data"].keys()))
@@ -633,7 +648,7 @@ def run_consumer(leave_after_finished_run=True, server={"server": None, "port": 
             print('no response from the server (with "timeout"=%d ms) ' % socket.RCVTIMEO)
             for setup_id, data in setup_id_to_data.items():
                 print(f"[FINAL] Setup {setup_id}: daily-data has {len(data.get('daily-data', {}))} keys")
-                # finalize_outputs(setup_id, data["nrows"], data["ncols"])
+                finalize_outputs(setup_id, data["nrows"], data["ncols"])
                 # Write daily CSV data if available
                 if data.get("daily-data"):
                     path_to_csv_out_dir = config["csv-out"] + str(setup_id) + "/"
