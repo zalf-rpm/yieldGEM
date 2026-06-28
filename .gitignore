@@ -123,3 +123,9 @@ out
 out_test
 out_old
 out_fbp
+
+# Local SCR climate data and local validation outputs
+/data/dwd/dwd/
+/local-flat-preflight/
+/local-monica-smoke/
+/local-monica-smoke-reduced/

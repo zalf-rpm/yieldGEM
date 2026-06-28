@@ -17,6 +17,7 @@
             "Precipitation": "precip",
             "RelHumCalc": "relhumid",
 			"Radiation": ["globrad", "/", 1000.0],
+			"SunshineDuration": "sunhours",
 			"Windspeed": "wind"
         }
     },

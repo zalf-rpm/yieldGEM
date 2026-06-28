@@ -18,6 +18,7 @@ DEFAULTS = {
     "points-file": "scr_points.csv",
     "mapping-file": "data/dwd/csvs/latlon_to_rowcol.json",
     "climate-root": "data/dwd/csvs/germany_ubn_1951-01-01_to_2024-08-30",
+    "flat-climate-root": "",
     "output": "scr_required_climate_files.csv",
 }
 
@@ -51,10 +52,15 @@ def main() -> None:
         cell_to_bkr[(scalar_int(crow), scalar_int(ccol))].append(int(point["bkr_id"]))
 
     climate_root = Path(config["climate-root"])
+    flat_climate_root = str(config["flat-climate-root"]).strip()
     rows = []
     for (crow, ccol), bkr_ids in sorted(cell_to_bkr.items()):
         relative_path = Path(str(crow)) / f"daily_mean_RES1_C{ccol}R{crow}.csv.gz"
-        full_path = climate_root / relative_path
+        full_path = (
+            Path(flat_climate_root) / relative_path.name
+            if flat_climate_root
+            else climate_root / relative_path
+        )
         rows.append(
             {
                 "crow": crow,

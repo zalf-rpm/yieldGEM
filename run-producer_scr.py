@@ -13,7 +13,7 @@ import sqlite3
 import sys
 import time
 from collections import defaultdict
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -39,6 +39,11 @@ from scr_simulation_lib import (
 
 
 PATHS = {
+    "localProducer-localMonica": {
+        "path-to-climate-dir": "./data/",
+        "monica-path-to-climate-dir": "./data/",
+        "path-to-data-dir": "./data/",
+    },
     "re-local-remote": {
         "path-to-climate-dir": "data/",
         "monica-path-to-climate-dir": "/monica_data/climate-data/",
@@ -79,6 +84,7 @@ DEFAULTS = {
     "max-params": "-1",
     "resume": "true",
     "check-climate-files": "false",
+    "flat-climate-dir": "",
     "preflight-only": "false",
     "progress-every": "25",
 }
@@ -282,20 +288,27 @@ def prepare_point_contexts(
                     raise ValueError(f"ILR station {ilr_station} has no {crop_id} dates")
 
                 subpath = climate_subpath(setup, crow, ccol)
-                host_climate_path = (
-                    Path(paths["path-to-climate-dir"])
-                    / str(setup["climate_path_to_csvs"])
-                    / Path(subpath)
-                )
+                flat_climate_dir = str(config["flat-climate-dir"]).strip()
+                if flat_climate_dir:
+                    host_climate_path = Path(flat_climate_dir) / Path(subpath).name
+                else:
+                    host_climate_path = (
+                        Path(paths["path-to-climate-dir"])
+                        / str(setup["climate_path_to_csvs"])
+                        / Path(subpath)
+                    )
                 if check_climate and host_climate_path not in checked_climate_files:
                     validate_climate_file(host_climate_path, start, end)
                     checked_climate_files.add(host_climate_path)
 
-                monica_climate_path = posixpath.join(
-                    paths["monica-path-to-climate-dir"].rstrip("/"),
-                    str(setup["climate_path_to_csvs"]).strip("/"),
-                    subpath,
-                )
+                if flat_climate_dir:
+                    monica_climate_path = str(host_climate_path.resolve())
+                else:
+                    monica_climate_path = posixpath.join(
+                        paths["monica-path-to-climate-dir"].rstrip("/"),
+                        str(setup["climate_path_to_csvs"]).strip("/"),
+                        subpath,
+                    )
                 contexts.append(
                     {
                         **point,
@@ -494,6 +507,7 @@ def create_run_signature(config: dict[str, Any], setup: dict[str, Any]) -> dict[
         "start_date": config["start-date"],
         "end_date": config["end-date"],
         "expected_seasons": int(config["expected-seasons"]),
+        "flat_climate_dir": str(config["flat-climate-dir"]),
         **{key: file_sha256(path) for key, path in source_paths.items()},
     }
 
@@ -553,7 +567,7 @@ def main() -> None:
     manifest = {
         "pipeline": PIPELINE_ID,
         "run_signature": run_signature,
-        "created_utc": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "setup_id": setup_id,
         "start_date": config["start-date"],
         "end_date": config["end-date"],

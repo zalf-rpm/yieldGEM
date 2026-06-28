@@ -119,3 +119,12 @@ scr-csv-out-20/
 With 20 parameter groups, the run contains 1,000 MONICA environments and 40,000
 complete crop-season samples. A non-empty `missing_scenarios.csv` or a non-zero
 consumer exit code means the run is not complete.
+
+## Local flat climate directory
+
+MONICA reads `.csv.gz` directly; decompression is not required. For climate files
+stored flat under `data/dwd/dwd`, use:
+
+```text
+mode=localProducer-localMonica flat-climate-dir=data/dwd/dwd server=localhost
+```
